@@ -1,11 +1,15 @@
 import '../path/to/globals.css';
 import RootLayout from '../path/to/RootLayout';
+import { AuthProvider } from '../context/AuthContext';
 
 function MyApp({ Component, pageProps }) {
     return (
-        <RootLayout>
-            <Component {...pageProps} />
-        </RootLayout>
+        <AuthProvider>
+            <RootLayout>
+                <p>test</p>
+                <Component {...pageProps} />
+            </RootLayout>
+        </AuthProvider>
     );
 }
 
