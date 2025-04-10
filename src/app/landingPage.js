@@ -4,27 +4,6 @@ export default function Home() {
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-      <h1 className="text-4xl font-bold">
-        <span className="text-green-500">Nutri</span><span class="text-teal-400">Plan</span>
-      </h1>
-        <ul className="list-inside text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-            <li className="mb-2">
-              Features in progress.
-            </li>
-            <li className="mb-2">All names are placeholders</li>
-            <li>Check back later for updates</li>
-        </ul>
-      </main>
-    </div>
-  );
-}
-
-
-/*
-export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
         <Image
           className="dark:invert"
           src="/next.svg"
@@ -120,4 +99,3 @@ export default function Home() {
     </div>
   );
 }
-*/
