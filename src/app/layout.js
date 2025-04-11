@@ -6,6 +6,7 @@ import Navbar from "./navbar";
 import { AuthProvider } from './/../../context/authcontext';
 
 
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],

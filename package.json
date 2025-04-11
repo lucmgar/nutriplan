@@ -9,10 +9,15 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@tomickigrzegorz/react-circular-progress-bar": "^1.1.2",
     "firebase": "^11.6.0",
     "next": "15.1.7",
+    "nextjs-progressbar": "^0.0.16",
     "react": "^19.0.0",
+    "react-circle-progress-bar": "^0.1.4",
+    "react-circular-progressbar": "^2.2.0",
     "react-dom": "^19.0.0",
+    "react-percentage-bar": "^1.2.5",
     "styled-components": "^6.1.15"
   },
   "devDependencies": {

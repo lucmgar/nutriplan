@@ -56,11 +56,12 @@ export default function LoginPage() {
 
   return (
     <div style={{ maxWidth: 400, margin: 'auto', padding: 20 }}>
-      <h2>{isRegistering ? 'Register' : 'Login'}</h2>
+      <h2 >{isRegistering ? 'Register' : 'Login'}</h2>
       <form onSubmit={handleAuth}>
         <input
           type="email"
           placeholder="Email"
+          className='class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"'
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -69,18 +70,24 @@ export default function LoginPage() {
         <input
           type="password"
           placeholder="Password"
+          className='class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"'
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
           style={{ display: 'block', width: '100%', marginBottom: 10 }}
         />
-        <button type="submit">
+        <button type="submit"  className={`w-20 px-3 py-1 rounded-lg text-white ${
+            isRegistering ? 'bg-green-500' : 'bg-blue-500'
+          }`}>
           {isRegistering ? 'Register' : 'Login'}
         </button>
       </form>
       <p style={{ marginTop: 20 }}>
         {isRegistering ? 'Already have an account?' : 'New user?'}{' '}
-        <button onClick={() => setIsRegistering(!isRegistering)}>
+        <button
+          onClick={() => setIsRegistering(!isRegistering)}
+          className="px-1 py-.5 border border-slate-500 rounded-lg text-slate-200 "
+        >
           {isRegistering ? 'Log in' : 'Register'}
         </button>
       </p>
