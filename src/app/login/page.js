@@ -8,7 +8,15 @@ import {
   signOut,
 } from 'firebase/auth';
 import { useAuth } from '../../../context/authcontext';
-import { auth } from '../../../firebase';
+import { auth, db, doc, setDoc } from '../../../firebase';
+import * as React from 'react';
+import Timeline from '@mui/lab/Timeline';
+import TimelineItem from '@mui/lab/TimelineItem';
+import TimelineSeparator from '@mui/lab/TimelineSeparator';
+import TimelineConnector from '@mui/lab/TimelineConnector';
+import TimelineContent from '@mui/lab/TimelineContent';
+import TimelineDot from '@mui/lab/TimelineDot';
+
 
 export default function LoginPage() {
   const [isRegistering, setIsRegistering] = useState(false);
@@ -16,7 +24,25 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const { user } = useAuth();
   const router = useRouter();
+  const [stepsGoal, setStepsGoal] = useState(10000);
+  const [waterGoal, setWaterGoal] = useState(8);
 
+  const saveGoals = async () => {
+    try {
+      const ref = doc(db, `users/${user.uid}`);
+      await setDoc(ref, {
+        goals: {
+          steps: stepsGoal,
+          water: waterGoal,
+        },
+      }, { merge: true });
+      alert('Goals saved!');
+    } catch (err) {
+      console.error('Error saving goals:', err);
+      alert('Error saving goals');
+    }
+  };
+  
   const handleAuth = async (e) => {
     e.preventDefault();
     try {
@@ -37,20 +63,64 @@ export default function LoginPage() {
 
   if (user) {
     return (
-      <div>
-          <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-          <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-          <h1 className="text-4xl font-bold">
-            <span className="text-slate-400">Welcome back, </span><span className="tex-white">{user.email}</span>
-          </h1>
-            <ul className="list-inside text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-                <li className="mb-2">
-                <button onClick={handleLogout}>Log out</button>
-                </li>
-            </ul>
-          </main>
+      <main className="min-h-screen flex flex-col items-center justify-center bg-black p-6">
+        <h1 className="text-4xl font-bold text-center mb-8 text-white">
+          <span className="text-slate-400">Welcome back, </span>
+          <span>{user.email}</span>
+        </h1>
+
+        <div className="bg-gray-800 text-white rounded-xl p-6 shadow-lg flex flex-col gap-6 w-full max-w-sm">
+          <h2 className="text-xl font-bold text-white">Your Daily Goals</h2>
+
+          {/* Steps Goal */}
+          <div className="flex flex-col gap-2">
+            <label className="text-white text-sm font-medium flex justify-between">
+              <span>Steps Goal</span>
+              <span className="text-green-400 font-semibold">{stepsGoal.toLocaleString()}</span>
+            </label>
+            <input
+              type="range"
+              min="0"
+              max="50000"
+              step="1000"
+              value={stepsGoal}
+              onChange={(e) => setStepsGoal(Number(e.target.value))}
+              className="accent-green-400"
+            />
+          </div>
+
+          {/* Water Goal */}
+          <div className="flex flex-col gap-2">
+            <label className="text-white text-sm font-medium flex justify-between">
+              <span>Water Goal (cups)</span>
+              <span className="text-blue-400 font-semibold">{waterGoal}</span>
+            </label>
+            <input
+              type="range"
+              min="0"
+              max="20"
+              step="1"
+              value={waterGoal}
+              onChange={(e) => setWaterGoal(Number(e.target.value))}
+              className="accent-blue-400"
+            />
+          </div>
+
+          <button
+            onClick={saveGoals}
+            className="bg-blue-500 text-white rounded p-2 hover:bg-blue-600 transition"
+          >
+            Save Goals
+          </button>
         </div>
-      </div>
+
+        <button
+          onClick={handleLogout}
+          className="mt-6 text-red-400 underline hover:text-red-500 transition text-sm"
+        >
+          Log out
+        </button>
+      </main>
     );
   }
 
@@ -91,6 +161,30 @@ export default function LoginPage() {
           {isRegistering ? 'Log in' : 'Register'}
         </button>
       </p>
+      <div className='pt-10 flex'>
+        <Timeline>
+          <TimelineItem>
+            <TimelineSeparator>
+              <TimelineDot />
+              <TimelineConnector />
+            </TimelineSeparator>
+            <TimelineContent>Create your account</TimelineContent>
+          </TimelineItem>
+          <TimelineItem>
+            <TimelineSeparator>
+              <TimelineDot />
+              <TimelineConnector />
+            </TimelineSeparator>
+            <TimelineContent>Set your goals</TimelineContent>
+          </TimelineItem>
+          <TimelineItem>
+            <TimelineSeparator>
+              <TimelineDot />
+            </TimelineSeparator>
+            <TimelineContent>Track your progress</TimelineContent>
+          </TimelineItem>
+        </Timeline>
+      </div>
     </div>
   );
 }

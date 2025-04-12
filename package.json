@@ -9,8 +9,14 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/joy": "^5.0.0-beta.52",
+    "@mui/lab": "^7.0.0-beta.11",
+    "@mui/material": "^7.0.2",
     "@tomickigrzegorz/react-circular-progress-bar": "^1.1.2",
     "firebase": "^11.6.0",
+    "flowbite-react": "^0.11.7",
     "next": "15.1.7",
     "nextjs-progressbar": "^0.0.16",
     "react": "^19.0.0",

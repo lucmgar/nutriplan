@@ -1,16 +1,28 @@
-"use client";
+'use client';
+
 import { useState, useEffect } from "react";
+import { auth, db } from '../../../firebase';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { onAuthStateChanged } from "firebase/auth";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
-import { LinearProgressBar } from "react-percentage-bar";
 import CalendarHeatmap from 'react-calendar-heatmap';
 import "react-circular-progressbar/dist/styles.css";
+import { LinearProgressBar } from "react-percentage-bar";
 
 export default function Goalsetting() {
+  const [progress1, setProgress1] = useState(0); // Steps %
+  const [progress2, setProgress2] = useState(0); // Water %
+  const [progress3, setProgress3] = useState(0); // Placeholder (calories)
+  const [uid, setUid] = useState(null);
+  const [goals, setGoals] = useState({});
+  const [stats, setStats] = useState({});
+
   const today = new Date();
   const sixMonthsAgo = new Date();
   sixMonthsAgo.setMonth(today.getMonth() - 6);
-  
-  function formatDayWithSuffix(day) {
+  const todayStr = today.toISOString().split("T")[0]; // "YYYY-MM-DD"
+
+  const formatDayWithSuffix = (day) => {
     if (day > 3 && day < 21) return `${day}th`;
     switch (day % 10) {
       case 1: return `${day}st`;
@@ -18,8 +30,8 @@ export default function Goalsetting() {
       case 3: return `${day}rd`;
       default: return `${day}th`;
     }
-  }
-  
+  };
+
   const formattedDate = (() => {
     const day = today.getDate();
     const month = today.toLocaleString("en-US", { month: "long" });
@@ -27,24 +39,50 @@ export default function Goalsetting() {
     return `${month} ${formatDayWithSuffix(day)}, ${year}`;
   })();
 
-  const [progress1, setProgress1] = useState(0);
-  const [progress2, setProgress2] = useState(0);
-  const [progress3, setProgress3] = useState(0);
-
+  // Auth listener
   useEffect(() => {
-    const timeout1 = setTimeout(() => setProgress1(42), 300);
-    const timeout2 = setTimeout(() => setProgress2(76), 500);
-    const timeout3 = setTimeout(() => setProgress3(88), 700);
-
-    return () => {
-      clearTimeout(timeout1);
-      clearTimeout(timeout2);
-      clearTimeout(timeout3);
-    };
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUid(user.uid);
+      }
+    });
+    return () => unsubscribe();
   }, []);
 
+  // Real-time Firestore listeners
+  useEffect(() => {
+    if (!uid) return;
+
+    const goalsRef = doc(db, `users/${uid}`);
+    const statsRef = doc(db, `users/${uid}/stats/${todayStr}`);
+
+    const unsubGoals = onSnapshot(goalsRef, (docSnap) => {
+      const newGoals = docSnap.data()?.goals || {};
+      setGoals(newGoals);
+      updateProgress(newGoals, stats);
+    });
+
+    const unsubStats = onSnapshot(statsRef, (docSnap) => {
+      const newStats = docSnap.data() || {};
+      setStats(newStats);
+      updateProgress(goals, newStats);
+    });
+
+    const updateProgress = (g, s) => {
+      const stepPercent = g.steps ? Math.min(100, Math.round((s.steps || 0) / g.steps * 100)) : 0;
+      const waterPercent = g.water ? Math.min(100, Math.round((s.water || 0) / g.water * 100)) : 0;
+      setProgress1(stepPercent);
+      setProgress2(waterPercent);
+      setProgress3(88); // Placeholder
+    };
+
+    return () => {
+      unsubGoals();
+      unsubStats();
+    };
+  }, [uid, todayStr, goals, stats]);
+
   return (
-    
     <div className="flex flex-col items-center min-h-screen w-full px-4 sm:px-8 py-6 gap-12 bg-black text-white">
       <div className="text-center">
         <h1 className="text-4xl font-black">
@@ -54,6 +92,7 @@ export default function Goalsetting() {
           <li className="mb-2">"Generic motivational quote" - Some Guy</li>
         </ul>
       </div>
+
       {/* CIRCULAR PROGRESS BARS */}
       <div className="flex flex-wrap justify-center gap-12 w-full max-w-6xl">
         {[ 
@@ -77,7 +116,7 @@ export default function Goalsetting() {
           </div>
         ))}
       </div>
-  
+
       {/* LINEAR PROGRESS BARS */}
       <div className="flex flex-wrap justify-center gap-12 w-full max-w-6xl">
         <LinearProgressBar
@@ -110,20 +149,15 @@ export default function Goalsetting() {
         />
       </div>
 
-            {/* CALENDAR HEATMAP */}
-            <div className="w-1/2 max-w-3xl overflow-hidden animate-fadeIn">
+      {/* CALENDAR HEATMAP */}
+      <div className="w-1/2 max-w-3xl overflow-hidden animate-fadeIn">
         <CalendarHeatmap
           startDate={sixMonthsAgo}
           endDate={today}
-          rectProps={{
-            rx: '100'
-          }}  
+          rectProps={{ rx: '100' }}
           values={[
             { date: "2024-12-23", count: 1 },
-            { date: "2024-12-23", count: 1 },
             { date: "2024-11-23", count: 1 },
-            { date: "2024-11-23", count: 1 },
-
           ]}
           gutterSize={4}
           showWeekdayLabels={true}
@@ -131,8 +165,5 @@ export default function Goalsetting() {
         />
       </div>
     </div>
-
-    
   );
 }
-  

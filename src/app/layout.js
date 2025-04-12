@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "./navbar";
 import { AuthProvider } from './/../../context/authcontext';
+import ActionPanel from "./actionpanel";
 
 
 
@@ -26,6 +27,7 @@ export default function RootLayout({ children }) {
         >
           <Navbar></Navbar>
           {children}
+          <ActionPanel></ActionPanel>
         </body>
       </html>
     </AuthProvider>
