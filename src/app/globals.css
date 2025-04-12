@@ -1,6 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import 'react-calendar-heatmap/dist/styles.css';
+
 
 :root {
   --background: #ffffff;
