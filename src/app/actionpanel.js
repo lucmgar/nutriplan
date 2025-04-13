@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import StepsSlider from './stepsslider';
+import AddMealForm from './addmealform';
 import { db, auth } from '../../firebase';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -13,7 +14,7 @@ export default function ActionPanel() {
   const [isWaterTouched, setIsWaterTouched] = useState(false);
   const today = new Date().toISOString().split('T')[0];
 
-  // Get current user UID
+  // Auth listener
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -27,7 +28,7 @@ export default function ActionPanel() {
     return () => unsubscribe();
   }, []);
 
-  // Load water from Firestore on mount
+  // Load water data on mount
   useEffect(() => {
     if (uid) {
       const fetchExisting = async () => {
@@ -45,7 +46,7 @@ export default function ActionPanel() {
     }
   }, [uid, today]);
 
-  // Save water to Firestore only if user interacted
+  // Save water when changed
   useEffect(() => {
     if (uid && isWaterTouched) {
       const ref = doc(db, `users/${uid}/stats`, today);
@@ -56,7 +57,7 @@ export default function ActionPanel() {
     }
   }, [water, uid, today, isWaterTouched]);
 
-  // ESC key closes panel
+  // Close on Escape
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') setIsOpen(false);
@@ -88,44 +89,54 @@ export default function ActionPanel() {
           onClick={() => setIsOpen(false)}
         >
           <div
-            className="bg-white p-6 rounded-xl shadow-xl w-80 z-50"
+            className="bg-neutral-900 p-6 rounded-xl shadow-xl w-[90vw] max-w-4xl max-h-[90vh] overflow-y-auto z-50"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-xl font-bold mb-4 text-black">Action Panel</h2>
+            <h2 className="text-2xl font-bold mb-6 text-white">Action Panel</h2>
 
-            {/* Water Counter */}
-            <div className="flex items-center justify-between gap-4 p-4 bg-white rounded-xl shadow">
-              <button
-                onClick={() => {
-                  setWater(Math.max(0, water - 1));
-                  setIsWaterTouched(true);
-                }}
-                className="bg-blue-500 text-white w-10 h-10 rounded-full text-xl hover:bg-blue-600 transition"
-              >
-                –
-              </button>
-              <div className="text-center">
-                <div className="text-lg font-semibold text-black">Drink Water</div>
-                <div className="text-blue-500 font-bold text-xl">{water}</div>
+            {/* Controls: Water & Steps */}
+            <div className="flex flex-col md:flex-row gap-6 justify-between mb-6">
+              {/* Water Counter */}
+              <div className="flex items-center justify-between gap-4 p-4 bg-white rounded-xl shadow w-full md:w-1/2">
+                <button
+                  onClick={() => {
+                    setWater(Math.max(0, water - 1));
+                    setIsWaterTouched(true);
+                  }}
+                  className="bg-blue-500 text-white w-10 h-10 rounded-full text-xl hover:bg-blue-600 transition"
+                >
+                  –
+                </button>
+                <div className="text-center">
+                  <div className="text-lg font-semibold text-black">Drink Water</div>
+                  <div className="text-blue-500 font-bold text-xl">{water}</div>
+                </div>
+                <button
+                  onClick={() => {
+                    setWater(water + 1);
+                    setIsWaterTouched(true);
+                  }}
+                  className="bg-blue-500 text-white w-10 h-10 rounded-full text-xl hover:bg-blue-600 transition"
+                >
+                  +
+                </button>
               </div>
-              <button
-                onClick={() => {
-                  setWater(water + 1);
-                  setIsWaterTouched(true);
-                }}
-                className="bg-blue-500 text-white w-10 h-10 rounded-full text-xl hover:bg-blue-600 transition"
-              >
-                +
-              </button>
+
+              {/* Steps */}
+              <div className="w-full md:w-1/2">
+                <StepsSlider />
+              </div>
             </div>
 
-            {/* Steps Slider */}
-            <StepsSlider />
+            {/* Meal Form */}
+            <div className="mt-4">
+              <AddMealForm />
+            </div>
 
             {/* Close */}
             <button
               onClick={() => setIsOpen(false)}
-              className="mt-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition w-full"
+              className="mt-6 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition w-full"
             >
               Close
             </button>

@@ -21,3 +21,13 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+
+.react-calendar-heatmap text {
+  display: block !important;
+}
+
+.react-calendar-heatmap text {
+  visibility: visible;
+  opacity: 1;
+}
