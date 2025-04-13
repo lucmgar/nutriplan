@@ -76,7 +76,7 @@ export default function Goalsetting() {
     fetchQuote();
   }, []);
 
-  // Fetch goals and calendar data
+  // Fetch user goals and calendar stats (initial load)
   useEffect(() => {
     if (!uid) return;
 
@@ -89,6 +89,20 @@ export default function Goalsetting() {
 
     return () => unsubGoals();
   }, [uid]);
+
+  // Real-time updates for today
+  useEffect(() => {
+    if (!uid || !goals || !goals.steps || !goals.water) return;
+
+    const statsRef = doc(db, `users/${uid}/stats/${todayStr}`);
+    const unsubStats = onSnapshot(statsRef, (docSnap) => {
+      const newStats = docSnap.data() || {};
+      setStats(newStats);
+      updateProgress(goals, newStats);
+    });
+
+    return () => unsubStats();
+  }, [uid, goals, todayStr]);
 
   const fetchAndProcessStats = async (currentGoals) => {
     if (!uid) return;
@@ -119,11 +133,6 @@ export default function Goalsetting() {
         else count = 0;
 
         values.push({ date: dateStr, count });
-
-        if (dateStr === todayStr) {
-          setStats(data);
-          updateProgress(currentGoals, data);
-        }
       }
 
       cursor.setDate(cursor.getDate() + 1);
