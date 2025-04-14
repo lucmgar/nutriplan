@@ -10,16 +10,19 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore, collection, addDoc } from 'firebase/firestore';
 import { app } from '../../../firebase';
 
+// Initialize Firebase services
 const auth = getAuth(app);
 const db = getFirestore(app);
 
 export default function Recipedatabase() {
+  // UI and data states
   const [search, setSearch] = useState('');
   const [recipes, setRecipes] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [openAccordion, setOpenAccordion] = useState(null);
 
+  // Handles recipe search via API
   const handleSearch = async () => {
     setError(null);
     setLoading(true);
@@ -38,6 +41,7 @@ export default function Recipedatabase() {
     setLoading(false);
   };
 
+  // Handles adding recipe ingredients to Firestore shopping list
   const handleAddToShoppingList = async (recipe) => {
     const user = auth.currentUser;
     if (!user) {
@@ -62,11 +66,13 @@ export default function Recipedatabase() {
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)] bg-black text-white">
       <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start w-full max-w-3xl">
+        {/* Page Heading */}
         <h1 className="text-4xl font-bold text-center sm:text-left">
           <span className="text-green-500">Recipe </span>
           <span className="text-teal-400">Search</span>
         </h1>
 
+        {/* Subtext instructions */}
         <ul className="list-inside text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)] text-gray-300">
           <li className="mb-2">Search for healthy meals and view their nutrition facts.</li>
         </ul>
@@ -88,10 +94,11 @@ export default function Recipedatabase() {
           </button>
         </div>
 
+        {/* Feedback messages */}
         {error && <p className="text-red-400">{error}</p>}
         {loading && <p className="text-gray-400">Loading recipes...</p>}
 
-        {/* Results */}
+        {/* Accordion List of Results */}
         <AccordionGroup disableDivider sx={{ width: '100%' }}>
           {recipes.map((recipe) => (
             <Accordion
@@ -102,12 +109,14 @@ export default function Recipedatabase() {
               }
               className="bg-neutral-800 text-white rounded-lg border border-neutral-700 mb-4"
             >
+              {/* Recipe Title */}
               <AccordionSummary className="font-semibold text-lg text-white" sx={{ color: 'white' }}>
                 <p className="text-white">{recipe.title}</p>
               </AccordionSummary>
 
+              {/* Recipe Details */}
               <AccordionDetails className="text-sm text-gray-300 flex flex-col gap-4">
-                {/* Image */}
+                {/* Recipe Image */}
                 {recipe.image && (
                   <Image
                     src={recipe.image}
@@ -119,14 +128,14 @@ export default function Recipedatabase() {
                   />
                 )}
 
-                {/* Summary */}
+                {/* Summary Text */}
                 {recipe.summary && (
                   <p className="text-gray-400 leading-relaxed">
                     {recipe.summary.replace(/<[^>]+>/g, '')}
                   </p>
                 )}
 
-                {/* Nutrition */}
+                {/* Nutrition Facts Section */}
                 {recipe.nutrition && Object.keys(recipe.nutrition).length > 0 && (
                   <div>
                     <h4 className="font-semibold text-white mb-2">Nutrition Facts</h4>
@@ -146,7 +155,7 @@ export default function Recipedatabase() {
                   </div>
                 )}
 
-                {/* Link */}
+                {/* Link to Original Recipe */}
                 <a
                   href={recipe.sourceUrl}
                   target="_blank"
@@ -156,6 +165,7 @@ export default function Recipedatabase() {
                   View full recipe →
                 </a>
 
+                {/* Add to Shopping List Button */}
                 <button
                   onClick={() => handleAddToShoppingList(recipe)}
                   className="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded font-semibold mt-4"

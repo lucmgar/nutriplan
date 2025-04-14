@@ -17,6 +17,7 @@ import TimelineConnector from '@mui/lab/TimelineConnector';
 import TimelineContent from '@mui/lab/TimelineContent';
 import TimelineDot from '@mui/lab/TimelineDot';
 
+// Define goal categories and fields
 const categories = {
   '🥩 Macronutrients': [
     'totalFat', 'saturatedFat', 'cholesterol', 'sodium',
@@ -25,22 +26,27 @@ const categories = {
   '🍊 Micronutrients': ['vitaminA', 'vitaminC', 'calcium', 'iron'],
 };
 
+// Flatten the goal fields into a single array
 const allFields = Object.values(categories).flat();
 
 export default function LoginPage() {
+  // Auth & Navigation
   const [isRegistering, setIsRegistering] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { user } = useAuth();
   const router = useRouter();
 
+  // Core goal state
   const [stepsGoal, setStepsGoal] = useState(10000);
   const [waterGoal, setWaterGoal] = useState(8);
   const [caloriesGoal, setCaloriesGoal] = useState(2000);
+
+  // Optional goals state
   const [goalToggles, setGoalToggles] = useState({});
   const [goalValues, setGoalValues] = useState({});
 
-  // Auto-load goals from Firestore on user auth
+  // Load user goals from Firestore on login
   useEffect(() => {
     if (!user) return;
     const loadGoals = async () => {
@@ -48,10 +54,12 @@ export default function LoginPage() {
       const snap = await getDoc(ref);
       const data = snap.data()?.goals || {};
 
+      // Load core goals
       setStepsGoal(data.steps ?? 10000);
       setWaterGoal(data.water ?? 8);
       setCaloriesGoal(data.calories ?? 2000);
 
+      // Load optional goals
       const toggles = {};
       const values = {};
       for (const field of allFields) {
@@ -71,6 +79,7 @@ export default function LoginPage() {
     loadGoals();
   }, [user]);
 
+  // Save all goals to Firestore
   const saveGoals = async () => {
     try {
       const ref = doc(db, `users/${user.uid}`);
@@ -100,6 +109,7 @@ export default function LoginPage() {
     }
   };
 
+  // Handle login or registration form submission
   const handleAuth = async (e) => {
     e.preventDefault();
     try {
@@ -114,10 +124,12 @@ export default function LoginPage() {
     }
   };
 
+  // Log out current user
   const handleLogout = async () => {
     await signOut(auth);
   };
 
+  // If logged in, show goal setting UI
   if (user) {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center bg-black p-6">
@@ -126,11 +138,13 @@ export default function LoginPage() {
           <span>{user.email}</span>
         </h1>
 
+        {/* Goal setting form */}
         <div className="bg-gray-800 text-white rounded-xl p-6 shadow-lg flex flex-col gap-6 w-full max-w-2xl">
           <h2 className="text-xl font-bold">Set Your Daily Goals</h2>
 
           {/* Core goals */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {/* Steps */}
             <div className="flex flex-col gap-2">
               <label className="flex justify-between text-sm font-medium text-white">
                 Steps Goal
@@ -146,6 +160,8 @@ export default function LoginPage() {
                 className="accent-green-400"
               />
             </div>
+
+            {/* Water */}
             <div className="flex flex-col gap-2">
               <label className="flex justify-between text-sm font-medium text-white">
                 Water Goal (cups)
@@ -161,6 +177,8 @@ export default function LoginPage() {
                 className="accent-blue-400"
               />
             </div>
+
+            {/* Calories */}
             <div className="flex flex-col gap-2 sm:col-span-2">
               <label className="flex justify-between text-sm font-medium text-white">
                 Calories Goal (kcal)
@@ -175,7 +193,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Optional Goals */}
+          {/* Optional nutrient goals */}
           {Object.entries(categories).map(([label, fields]) => (
             <details key={label} className="border border-neutral-700 rounded-lg">
               <summary className="cursor-pointer px-4 py-2 font-semibold bg-neutral-900 hover:bg-neutral-800 transition">
@@ -217,6 +235,7 @@ export default function LoginPage() {
             </details>
           ))}
 
+          {/* Save button */}
           <button
             onClick={saveGoals}
             className="mt-4 bg-green-500 text-white rounded p-2 hover:bg-green-600 transition"
@@ -224,6 +243,7 @@ export default function LoginPage() {
             Save All Goals
           </button>
 
+          {/* Logout button */}
           <button
             onClick={handleLogout}
             className="mt-4 text-red-400 underline hover:text-red-500 transition text-sm"
@@ -235,6 +255,7 @@ export default function LoginPage() {
     );
   }
 
+  // If not logged in, show login/register form
   return (
     <div style={{ maxWidth: 400, margin: 'auto', padding: 20 }}>
       <h2>{isRegistering ? 'Register' : 'Login'}</h2>
@@ -266,6 +287,8 @@ export default function LoginPage() {
           {isRegistering ? 'Register' : 'Login'}
         </button>
       </form>
+
+      {/* Toggle login/register */}
       <p style={{ marginTop: 20 }}>
         {isRegistering ? 'Already have an account?' : 'New user?'}{' '}
         <button
@@ -275,6 +298,8 @@ export default function LoginPage() {
           {isRegistering ? 'Log in' : 'Register'}
         </button>
       </p>
+
+      {/* Steps timeline */}
       <div className="pt-10 flex">
         <Timeline>
           <TimelineItem>

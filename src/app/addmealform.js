@@ -7,6 +7,8 @@ import { useAuth } from '../../context/authcontext';
 
 export default function AddMealForm() {
   const { user } = useAuth();
+
+  // Initialize form state with nutritional fields
   const [formData, setFormData] = useState({
     mealName: '',
     mealTime: '',
@@ -26,24 +28,27 @@ export default function AddMealForm() {
     iron: '',
   });
 
+  // Update form data on input change
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Save meal data to Firestore
   const saveMeal = async () => {
     if (!user?.uid) return;
 
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split('T')[0]; // e.g., 2025-04-13
     const mealRef = collection(db, `users/${user.uid}/stats/${today}/meals`);
 
     await addDoc(mealRef, {
       ...formData,
-      timestamp: serverTimestamp(),
+      timestamp: serverTimestamp(), // auto-generated Firestore timestamp
     });
 
     alert('Meal saved!');
   };
 
+  // Common styling for input fields
   const inputClass =
     'bg-neutral-900 text-white border border-neutral-700 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-green-500 transition';
 
@@ -51,7 +56,7 @@ export default function AddMealForm() {
     <div className="w-full max-w-2xl mx-auto space-y-4 text-white">
       <h2 className="text-xl font-bold">Add Meal</h2>
 
-      {/* Meta Info */}
+      {/* Meta Info Section */}
       <details className="border border-neutral-700 rounded-lg p-4 bg-neutral-800">
         <summary className="cursor-pointer font-semibold text-lg">📝 Meta Info</summary>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
@@ -70,7 +75,7 @@ export default function AddMealForm() {
         </div>
       </details>
 
-      {/* Macronutrients */}
+      {/* Macronutrients Section */}
       <details className="border border-neutral-700 rounded-lg p-4 bg-neutral-800">
         <summary className="cursor-pointer font-semibold text-lg">🥩 Macronutrients</summary>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
@@ -98,7 +103,7 @@ export default function AddMealForm() {
         </div>
       </details>
 
-      {/* Micronutrients */}
+      {/* Micronutrients Section */}
       <details className="border border-neutral-700 rounded-lg p-4 bg-neutral-800">
         <summary className="cursor-pointer font-semibold text-lg">🍊 Micronutrients</summary>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
@@ -107,7 +112,6 @@ export default function AddMealForm() {
             { name: 'vitaminC', label: 'Vitamin C (mg)' },
             { name: 'calcium', label: 'Calcium (mg)' },
             { name: 'iron', label: 'Iron (mg)' },
-            // You can extend with more micronutrients as needed
           ].map((field) => (
             <label key={field.name} className="flex flex-col gap-1 text-sm">
               {field.label}
@@ -122,6 +126,7 @@ export default function AddMealForm() {
         </div>
       </details>
 
+      {/* Submit Button */}
       <button
         onClick={saveMeal}
         className="bg-green-500 hover:bg-green-600 px-4 py-2 rounded font-bold w-full"

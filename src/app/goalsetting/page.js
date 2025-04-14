@@ -9,7 +9,7 @@ import CalendarHeatmap from 'react-calendar-heatmap';
 import "react-circular-progressbar/dist/styles.css";
 import { LinearProgressBar } from "react-percentage-bar";
 
-// Core & Category definitions
+// Define core goals and optional nutrient categories
 const coreGoals = ["steps", "water", "calories"];
 const categories = {
   Macronutrients: ["protein", "sodium", "sugars"],
@@ -17,7 +17,7 @@ const categories = {
   Other: ["caffeine", "netCarbs", "glycemicIndex"],
 };
 
-// Helper: format camelCase → "Title Case"
+// Utility to convert camelCase to Title Case
 const formatFieldName = (name) => {
   return name
     .replace(/([A-Z])/g, ' $1')
@@ -25,6 +25,7 @@ const formatFieldName = (name) => {
 };
 
 export default function Goalsetting() {
+  // State setup
   const [uid, setUid] = useState(null);
   const [goals, setGoals] = useState({});
   const [stats, setStats] = useState({});
@@ -34,11 +35,13 @@ export default function Goalsetting() {
   const [calendarLoading, setCalendarLoading] = useState(true);
   const [progress, setProgress] = useState({ steps: 0, water: 0, calories: 0 });
 
+  // Date helpers
   const today = new Date();
   const sixMonthsAgo = new Date();
   sixMonthsAgo.setMonth(today.getMonth() - 6);
   const todayStr = today.toISOString().split("T")[0];
 
+  // Pretty format date for display
   const formattedDate = (() => {
     const day = today.getDate();
     const month = today.toLocaleString("en-US", { month: "long" });
@@ -46,6 +49,7 @@ export default function Goalsetting() {
     return `${month} ${day}${suffix(day)}, ${today.getFullYear()}`;
   })();
 
+  // Listen for user auth state
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) setUid(user.uid);
@@ -53,6 +57,7 @@ export default function Goalsetting() {
     return () => unsubscribe();
   }, []);
 
+  // Fetch motivational quote on mount
   useEffect(() => {
     async function fetchQuote() {
       try {
@@ -69,6 +74,7 @@ export default function Goalsetting() {
     fetchQuote();
   }, []);
 
+  // Realtime listener for goals from Firestore
   useEffect(() => {
     if (!uid) return;
     const goalsRef = doc(db, `users/${uid}`);
@@ -80,17 +86,24 @@ export default function Goalsetting() {
     return () => unsubGoals();
   }, [uid]);
 
+  // Realtime listener for today's stats
   useEffect(() => {
     if (!uid || !goals.steps || !goals.water || !goals.calories) return;
 
     const statsRef = doc(db, `users/${uid}/stats/${todayStr}`);
     const unsubStats = onSnapshot(statsRef, async (docSnap) => {
       const todayStats = docSnap.data() || {};
+
+      // Fetch today's meals
       const mealDocs = await getDocs(collection(db, `users/${uid}/stats/${todayStr}/meals`));
       const mealData = mealDocs.docs.map(d => d.data());
+
+      // Sum calories from meals
       const totalCals = mealData.reduce((acc, m) => acc + (Number(m.calories) || 0), 0);
 
       const mergedStats = { ...todayStats, calories: totalCals };
+
+      // Sum each goal from meal fields if not already in stats
       for (const field of Object.keys(goals)) {
         if (!mergedStats[field]) {
           mergedStats[field] = 0;
@@ -111,6 +124,7 @@ export default function Goalsetting() {
     return () => unsubStats();
   }, [uid, goals, todayStr]);
 
+  // Update progress circle values
   const updateProgress = (goals, stats) => {
     const p = {};
     for (const key of coreGoals) {
@@ -121,6 +135,7 @@ export default function Goalsetting() {
     setProgress(p);
   };
 
+  // Build calendar heatmap based on 6-month stats
   const fetchAndProcessStats = async (currentGoals) => {
     setCalendarLoading(true);
     const statsRef = collection(db, `users/${uid}/stats`);
@@ -135,17 +150,22 @@ export default function Goalsetting() {
     while (cursor <= today) {
       const dateStr = cursor.toISOString().split("T")[0];
       const s = statsMap[dateStr] || {};
+
+      // Fetch meal data for the day
       const mealsSnap = await getDocs(collection(db, `users/${uid}/stats/${dateStr}/meals`));
       const meals = mealsSnap.docs.map(d => d.data());
 
+      // Total calories
       s.calories = meals.reduce((acc, m) => acc + (Number(m.calories) || 0), 0);
 
+      // Total for optional nutrients
       for (const field of Object.keys(currentGoals)) {
         if (!coreGoals.includes(field)) {
           s[field] = meals.reduce((acc, m) => acc + (Number(m[field]) || 0), 0);
         }
       }
 
+      // Determine goal completion level (0–3)
       const mainGoalsMet = coreGoals.filter(g => currentGoals[g] && s[g] >= currentGoals[g]);
       const optionalGoals = Object.keys(currentGoals).filter(g => !coreGoals.includes(g));
       const allOptionalsMet = optionalGoals.every(g => s[g] >= currentGoals[g]);
@@ -165,6 +185,7 @@ export default function Goalsetting() {
 
   return (
     <div className="flex flex-col items-center min-h-screen w-full px-4 sm:px-8 py-6 gap-12 bg-black text-white">
+      {/* Header & Quote */}
       <div className="text-center">
         <h1 className="text-4xl font-black">{formattedDate}</h1>
         {quote && (
@@ -175,7 +196,7 @@ export default function Goalsetting() {
         )}
       </div>
 
-      {/* CIRCULAR PROGRESS BARS */}
+      {/* CIRCULAR PROGRESS BARS for Steps, Water, Calories */}
       <div className="flex flex-wrap justify-center gap-12 w-full max-w-6xl">
         {[
           { value: progress.steps, color: "#4ade80", label: "Steps" },
@@ -202,13 +223,13 @@ export default function Goalsetting() {
         ))}
       </div>
 
-      {/* LINEAR PROGRESS BARS */}
+      {/* LINEAR PROGRESS BARS for all enabled goals */}
       {Object.entries(categories).map(([cat, fields]) => (
         <div key={cat} className="w-full max-w-5xl">
           <h3 className="text-xl font-bold mt-6 mb-2">{cat}</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {fields
-              .filter((field) => goals[field] > 0)
+              .filter((field) => goals[field] > 0) // Show only fields that have a goal value
               .map((field) => {
                 const val = stats[field] || 0;
                 const goal = goals[field];
@@ -223,7 +244,7 @@ export default function Goalsetting() {
                 return (
                   <LinearProgressBar
                     key={field}
-                    text={field.replace(/([A-Z])/g, ' $1').replace(/^./, (c) => c.toUpperCase())}
+                    text={formatFieldName(field)}
                     color={color}
                     percentage={percent}
                     textStyle={{ color: "white" }}
@@ -235,8 +256,7 @@ export default function Goalsetting() {
         </div>
       ))}
 
-
-      {/* CALENDAR */}
+      {/* CALENDAR HEATMAP */}
       <div className="w-1/2 max-w-3xl overflow-hidden animate-fadeIn relative min-h-[180px]">
         <h3 className="text-xl font-bold mt-6 mb-2">Your Progress (Last 6 Months)</h3>
         {calendarLoading ? (
