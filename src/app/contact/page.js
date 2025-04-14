@@ -9,7 +9,13 @@ export default function Contact() {
       </h1>
         <ul className="list-inside text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
             <li className="mb-2">
-              Placeholder.
+              Lucas Garcia eqi1@txstate.edu
+            </li>
+            <li className="mb-2">
+              Mark Nardone tdy21@txstate.edu
+            </li>
+            <li className="mb-2">
+              Victor Lopez vml45@txstate.edu
             </li>
         </ul>
       </main>

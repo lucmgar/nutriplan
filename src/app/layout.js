@@ -6,6 +6,7 @@ import Navbar from "./navbar";
 import { AuthProvider } from './/../../context/authcontext';
 import ActionPanel from "./actionpanel";
 import FillMockData from "./mockdata";
+import MockMealsUploader from "./mockmealsuploader";
 
 
 

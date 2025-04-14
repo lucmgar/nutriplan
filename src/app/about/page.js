@@ -9,7 +9,9 @@ export default function About() {
       </h1>
         <ul className="list-inside text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
             <li className="mb-2">
-              Placeholder.
+              Lucas Garcia
+              Mark Nardone
+              Victor Lopez
             </li>
         </ul>
       </main>

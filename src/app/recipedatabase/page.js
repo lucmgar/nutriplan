@@ -6,6 +6,12 @@ import AccordionGroup from '@mui/joy/AccordionGroup';
 import Accordion from '@mui/joy/Accordion';
 import AccordionDetails from '@mui/joy/AccordionDetails';
 import AccordionSummary from '@mui/joy/AccordionSummary';
+import { getAuth } from 'firebase/auth';
+import { getFirestore, collection, addDoc } from 'firebase/firestore';
+import { app } from '../../../firebase';
+
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 export default function Recipedatabase() {
   const [search, setSearch] = useState('');
@@ -32,12 +38,33 @@ export default function Recipedatabase() {
     setLoading(false);
   };
 
+  const handleAddToShoppingList = async (recipe) => {
+    const user = auth.currentUser;
+    if (!user) {
+      setError('You must be signed in to save recipes.');
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, `users/${user.uid}/shoppinglist`), {
+        title: recipe.title,
+        ingredients: recipe.extendedIngredients || [],
+        image: recipe.image,
+        timestamp: new Date(),
+      });
+      alert('Added to shopping list!');
+    } catch (err) {
+      console.error('Error saving to shopping list:', err);
+      setError('Failed to save to shopping list.');
+    }
+  };
+
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)] bg-black text-white">
       <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start w-full max-w-3xl">
         <h1 className="text-4xl font-bold text-center sm:text-left">
-          <span className="text-green-500">Recipe Database </span>
-          <span className="text-teal-400">Page</span>
+          <span className="text-green-500">Recipe </span>
+          <span className="text-teal-400">Search</span>
         </h1>
 
         <ul className="list-inside text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)] text-gray-300">
@@ -75,8 +102,8 @@ export default function Recipedatabase() {
               }
               className="bg-neutral-800 text-white rounded-lg border border-neutral-700 mb-4"
             >
-              <AccordionSummary className="font-semibold text-lg text-white">
-                {recipe.title}
+              <AccordionSummary className="font-semibold text-lg text-white" sx={{ color: 'white' }}>
+                <p className="text-white">{recipe.title}</p>
               </AccordionSummary>
 
               <AccordionDetails className="text-sm text-gray-300 flex flex-col gap-4">
@@ -128,6 +155,13 @@ export default function Recipedatabase() {
                 >
                   View full recipe →
                 </a>
+
+                <button
+                  onClick={() => handleAddToShoppingList(recipe)}
+                  className="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded font-semibold mt-4"
+                >
+                  Add Ingredients to Shopping List
+                </button>
               </AccordionDetails>
             </Accordion>
           ))}

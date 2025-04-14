@@ -49,12 +49,14 @@ export async function GET(req) {
           summary: infoData.summary,
           sourceUrl: infoData.sourceUrl,
           nutrition,
+          extendedIngredients: infoData.extendedIngredients || [], // ✅ Now included!
         };
       })
     );
 
     return NextResponse.json({ results: enrichedResults });
   } catch (err) {
+    console.error('API Error:', err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
